@@ -3,7 +3,6 @@ import Button from "./Button";
 
 function Select({ label, options, onChange }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedValue, setSelectedValue] = useState("");
 
   const handleToggle = () => {
     setIsOpen(!isOpen);
@@ -11,7 +10,6 @@ function Select({ label, options, onChange }) {
 
   const handleMenuItemClick = (type) => {
     if (type) {
-      setSelectedValue(type);
       onChange(type);
     }
     setIsOpen(false);

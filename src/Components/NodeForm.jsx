@@ -3,12 +3,26 @@ import { useForm } from "react-hook-form";
 import Input from "./Input";
 import Button from "./Button";
 
-function NodeForm({ clickedNode, submitHandler, fields }) {
-  const { register, handleSubmit, setValue } = useForm();
+function NodeForm({ clickedNode, submitHandler, fields, setClickedNode }) {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+  } = useForm();
 
   useEffect(() => {
     fields.forEach((field) => {
-      setValue(field.name, clickedNode[field.name]);
+      if (field.name.includes(".")) {
+        let nestedNames = field.name.split(".");
+        let value = clickedNode;
+        nestedNames.forEach((key) => {
+          value = value[key];
+        });
+        setValue(field.name, value);
+      } else {
+        setValue(field.name, clickedNode[field.name]);
+      }
     });
   }, [clickedNode, setValue]);
 
@@ -27,10 +41,18 @@ function NodeForm({ clickedNode, submitHandler, fields }) {
             type={property.type}
             register={register}
             name={property.name}
+            errors={errors}
           />
         ))}
-
-        <Button label="Save" type="submit" />
+        <div className="flex flex-row justify-between">
+          <Button
+            label="Close"
+            handleClick={() => {
+              setClickedNode(null);
+            }}
+          />
+          <Button label="Save" type="submit" />
+        </div>
       </form>
     </div>
   );

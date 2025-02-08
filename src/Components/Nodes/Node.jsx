@@ -1,27 +1,35 @@
-import { Handle, Position, useNodeId, useNodesData } from "@xyflow/react";
+import { Handle, Position, useNodeId, useNodes } from "@xyflow/react";
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
 import { useCallback, useEffect } from "react";
-import NodeForm from "../NodeForm";
 import { useForm } from "react-hook-form";
 import Input from "../Input";
 import Button from "../Button";
 
-export const TaskNode = ({
+export const Node = ({
   clickedNode,
   onClick,
   deleteHandler,
   handleDataSubmit,
+  title,
 }) => {
   const sourcePosition = Position.Right;
   const targetPosition = Position.Left;
   const nodeId = useNodeId();
-  const nodeData = useNodesData(nodeId).data;
+  const nodes = useNodes();
+  const node = nodes.find((node) => node.id === nodeId);
+  const { type: nodeType, data: nodeData, error } = node;
   const { register, handleSubmit, setValue } = useForm();
   const fields = Object.keys(nodeData).map((key) => ({
     label: key,
     name: key,
     type: key === "Due Date" ? "date" : "text",
   }));
+
+  useEffect(() => {
+    fields.forEach((field) => {
+      setValue(field.name, nodeData[field.name]);
+    });
+  }, [nodeData, setValue]);
 
   const handleNodeClick = useCallback(
     (event) => {
@@ -33,16 +41,22 @@ export const TaskNode = ({
     [onClick]
   );
   const onSubmit = (data) => handleDataSubmit(data, nodeId);
-
   return (
     <div
-      className={`bg-blue-500 rounded-md shadow-md flex gap-2 flex-col ${
+      className={`${
+        nodeType === "task"
+          ? "bg-blue-400"
+          : nodeType === "condition"
+          ? "bg-gray-400"
+          : "bg-green-400"
+      } rounded-md shadow-md flex gap-2 flex-col w-100 ${
         nodeId === clickedNode?.id ? "border-2 border-black" : ""
       }`}
       onClick={handleNodeClick}
     >
       <div className="ml-auto w-full flex justify-between mt-2 font-bold">
-        <span className="ml-2 font-bold text-white">Task Node</span>
+        <span className="ml-2 font-bold text-white">{title}</span>
+        {error && <span className="text-red-600"> {error}</span>}
         <CloseOutlinedIcon
           sx={{ cursor: "pointer", color: "white" }}
           onClick={() => deleteHandler(nodeId)}
@@ -60,7 +74,6 @@ export const TaskNode = ({
               label={field.label}
               type={field.type}
               name={field.name}
-              value={nodeData[field.label]}
               register={register}
             />
           ))}

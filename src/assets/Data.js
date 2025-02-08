@@ -38,6 +38,6 @@ export const propertyFields = [
   { label: "deletable", type: "checkbox", name: "deletable" },
   { label: "selected", type: "checkbox", name: "selected" },
   { label: "dragging", type: "checkbox", name: "dragging" },
-  { label: "positionX", type: "number", name: "position.x" },
-  { label: "positionY", type: "number", name: "position.y" },
+  { label: "positionX", type: "text", name: "position.x" },
+  { label: "positionY", type: "text", name: "position.y" },
 ];

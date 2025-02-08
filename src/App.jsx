@@ -1,13 +1,12 @@
-import React, { useCallback, useState, useMemo } from "react";
+import React, { useCallback, useState, useMemo, useEffect } from "react";
 import { applyNodeChanges, applyEdgeChanges, addEdge } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { TaskNode } from "./Components/Nodes/TaskNode";
-import { ConditionNode } from "./Components/Nodes/ConditionNode";
-import { NotificationNode } from "./Components/Nodes/NotificationNode";
+import { Node } from "./Components/Nodes/Node";
 import Select from "./Components/Select";
 import Workflow from "./Components/Workflow";
 import { nodeOptions, propertyFields } from "./assets/Data";
 import NodeForm from "./Components/NodeForm";
+import Table from "./Components/Table";
 
 function App() {
   const [nodes, setNodes] = useState([]);
@@ -28,6 +27,17 @@ function App() {
     []
   );
 
+  useEffect(() => {
+    if (clickedNode) {
+      const updatedNode = nodes.find((node) => node.id === clickedNode.id);
+      if (updatedNode) {
+        setClickedNode(updatedNode);
+      } else {
+        setClickedNode(null);
+      }
+    }
+  }, [nodes]);
+
   const onNodesChange = useCallback((changes) => {
     setNodes((nds) => applyNodeChanges(changes, nds));
   }, []);
@@ -46,16 +56,33 @@ function App() {
   );
 
   const deleteHandler = (id) => {
-    setNodes((prevNodes) => {
-      const updatedNodes = prevNodes.filter((node) => node.id !== id);
-      return updatedNodes;
-    });
+    setNodes((prevNodes) =>
+      prevNodes
+        .map((node) =>
+          node.id === id
+            ? node.deletable
+              ? null
+              : { ...node, error: "Node not Deletable" }
+            : node
+        )
+        .filter(Boolean)
+    );
     setClickedNode(null);
   };
+
+  const onNodeClick = (nodeId) => {
+    const node = nodes.find((node) => node.id === nodeId);
+
+    setClickedNode(node);
+  };
+
   const addNode = (type) => {
     const newNode = {
       id: `${nodeId}`,
-      position: { x: 0, y: 0 },
+      position: {
+        x: Math.floor(Math.random() * 400),
+        y: Math.floor(Math.random() * 400),
+      },
       data: {
         ...defaultData[type],
       },
@@ -63,20 +90,16 @@ function App() {
       deletable: true,
       selected: false,
       dragging: false,
+      error: "",
     };
     setNodes((nds) => [...nds, newNode]);
     setNodeId(nodeId + 1);
   };
 
-  const onNodeClick = (nodeId) => {
-    const node = nodes.find((node) => node.id === nodeId);
-    setClickedNode(node);
-  };
-
   const submitHandler = (formValues, id) => {
     setNodes((prevNodes) =>
       prevNodes.map((node) =>
-        node.id === id ? { ...node, ...formValues } : node
+        node.id === id ? { ...node, ...formValues, error: "" } : node
       )
     );
   };
@@ -87,34 +110,36 @@ function App() {
   };
   const nodeTypes = {
     task: (props) => (
-      <TaskNode
+      <Node
         {...props}
         clickedNode={clickedNode}
         onClick={() => onNodeClick(props.id)}
         deleteHandler={deleteHandler}
         handleDataSubmit={handleDataSubmit}
+        title={"Task Node"}
       />
     ),
     condition: (props) => (
-      <TaskNode
+      <Node
         {...props}
-        selectedNodeId={clickedNode}
+        clickedNode={clickedNode}
         onClick={() => onNodeClick(props.id)}
         deleteHandler={deleteHandler}
         handleDataSubmit={handleDataSubmit}
+        title={"Condition Node"}
       />
     ),
     notification: (props) => (
-      <NotificationNode
+      <Node
         {...props}
-        selectedNodeId={selectedNodeId}
+        clickedNode={clickedNode}
         onClick={() => onNodeClick(props.id)}
         deleteHandler={deleteHandler}
         handleDataSubmit={handleDataSubmit}
+        title={"Notification Node"}
       />
     ),
   };
-
   return (
     <div className="grid grid-cols-1 md:grid-cols-12 gap-4 p-4 min-h-screen">
       <div
@@ -142,16 +167,17 @@ function App() {
             onChange={(type) => addNode(type)}
           />
         </div>
-        {clickedNode ? (
+        {clickedNode && nodes.some((node) => node.id === clickedNode.id) ? (
           <NodeForm
             key={"fromApp"}
             clickedNode={clickedNode}
             submitHandler={submitHandler}
             fields={propertyFields}
+            setClickedNode={setClickedNode}
           />
         ) : (
-          <div className="flex flex-grow flex-col overflow-hidden bg-white p-3">
-            All Nodes
+          <div className="flex flex-grow flex-col overflow-hidden bg-white p-3  ">
+            <Table nodesData={nodes} setNodes={setNodes} />
           </div>
         )}
       </div>
