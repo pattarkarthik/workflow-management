@@ -72,7 +72,6 @@ function App() {
 
   const onNodeClick = (nodeId) => {
     const node = nodes.find((node) => node.id === nodeId);
-
     setClickedNode(node);
   };
 
@@ -140,6 +139,7 @@ function App() {
       />
     ),
   };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-12 gap-4 p-4 min-h-screen">
       <div
@@ -156,6 +156,7 @@ function App() {
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
           nodeTypes={nodeTypes}
+          setNodes={setNodes}
         />
       </div>
 

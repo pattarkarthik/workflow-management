@@ -1,5 +1,11 @@
-import React from "react";
-import { ReactFlow, MiniMap, Controls, Background } from "@xyflow/react";
+import React, { useEffect, useState } from "react";
+import {
+  ReactFlow,
+  MiniMap,
+  Controls,
+  Background,
+  useKeyPress,
+} from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
 function Workflow({
@@ -9,7 +15,26 @@ function Workflow({
   onEdgesChange,
   onConnect,
   nodeTypes,
+  setNodes,
 }) {
+  const redoKey = useKeyPress(["Meta+y", "Control+y"]);
+  const undoKey = useKeyPress(["Meta+z", "Control+z"]);
+  const [history, setHistory] = useState([]);
+  useEffect(() => {
+    if (nodes.length > 0) {
+      setHistory((prevHistory) =>
+        prevHistory.length > 0 ? [...prevHistory, nodes] : [nodes]
+      );
+    }
+  }, [nodes]);
+  useEffect(() => {
+    if (history.length > 0) {
+      const changedState = [...history];
+      const previousState = changedState.pop();
+      setHistory(changedState);
+      setNodes(previousState);
+    }
+  }, [redoKey, undoKey]);
   return (
     <ReactFlow
       nodes={nodes}
@@ -18,6 +43,7 @@ function Workflow({
       onEdgesChange={onEdgesChange}
       onConnect={onConnect}
       nodeTypes={nodeTypes}
+      style={{ color: "blue" }}
     >
       <Controls />
       <MiniMap />

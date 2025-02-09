@@ -27,9 +27,8 @@ function NodeForm({ clickedNode, submitHandler, fields, setClickedNode }) {
   }, [clickedNode, setValue]);
 
   const onSubmit = (data) => submitHandler(data, clickedNode.id);
-
   return (
-    <div className="bg-black h-full p-5">
+    <div className="h-full p-5 bg-amber-100">
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="flex flex-col h-full justify-start"
@@ -42,6 +41,8 @@ function NodeForm({ clickedNode, submitHandler, fields, setClickedNode }) {
             register={register}
             name={property.name}
             errors={errors}
+            validationRegex={/^-?\d+(\.\d+)?$/}
+            errorMessage={"Enter Only Numbers"}
           />
         ))}
         <div className="flex flex-row justify-between">

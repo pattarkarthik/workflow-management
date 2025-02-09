@@ -5,6 +5,8 @@ function EditableCell({
   validationRegex,
   handleInputChange,
   errorMessage,
+  type,
+  checked,
 }) {
   const [value, setValue] = useState(defaultValue);
   const [error, setError] = useState("");
@@ -12,7 +14,7 @@ function EditableCell({
   const handleBlur = () => {
     if (validationRegex.test(value)) {
       setError("");
-      handleInputChange(parseFloat(value));
+      handleInputChange(type === "checkbox" ? value : parseFloat(value));
     } else {
       setError(errorMessage);
     }
@@ -21,11 +23,18 @@ function EditableCell({
   return (
     <div className="relative">
       <input
-        type="text"
-        className="[all:unset] p-1 text-center"
+        type={type}
+        className=" p-1 text-center "
         value={value}
-        onChange={(e) => setValue(e.target.value)}
+        onChange={(e) => {
+          if (type === "checkbox") {
+            setValue(e.target.checked);
+          } else {
+            setValue(e.target.value);
+          }
+        }}
         onBlur={handleBlur}
+        defaultChecked={checked}
       />
       {error && (
         <span className="absolute mt-5 -ml-45 text-xs text-red-500">

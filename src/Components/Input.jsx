@@ -1,28 +1,39 @@
 import React from "react";
 import { ErrorMessage } from "@hookform/error-message";
 
-function Input({ label, type, name, register, errors = {} }) {
+function Input({
+  label,
+  type,
+  name,
+  register,
+  errors = {},
+  validationRegex,
+  errorMessage,
+}) {
   return (
     <div className="flex flex-col mb-4">
-      <label className="text-white mb-1">{label}</label>
-      <input
-        className={`border-2 border-black bg-white rounded-md p-2 ${
-          type === "checkbox" ? "h-4" : "h-10"
-        }`}
-        {...register(name, {
-          valueAsNumber: type === "number",
-          pattern: {
-            value: /^-?\d+(\.\d+)?$/,
-            message: "Only numbers are allowed",
-          },
-        })}
-        type={type}
-      />
+      <div className="flex flex-row justify-between align-middle">
+        <label className="text-black  w-1/3 text-xs m-auto">{label}</label>
+        <input
+          className={`border-1 border-gray-400 bg-white rounded-md p-2 w-2/3 text-gray-700 text-sm ${
+            type === "checkbox" ? "h-4 checked:bg-amber-500" : "h-8"
+          }`}
+          {...register(name, {
+            ...(type === "text" && {
+              pattern: {
+                value: validationRegex,
+                message: errorMessage,
+              },
+            }),
+          })}
+          type={type}
+        />
+      </div>
       <ErrorMessage
         errors={errors}
         name={name}
         render={({ message }) => (
-          <span className="text-red-500">{message}</span>
+          <span className="text-red-500 text-xs">{message}</span>
         )}
       />
     </div>

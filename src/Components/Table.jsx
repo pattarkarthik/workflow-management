@@ -1,19 +1,16 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   useReactTable,
   getCoreRowModel,
   flexRender,
 } from "@tanstack/react-table";
 import { createColumnHelper } from "@tanstack/react-table";
-import { produce } from "immer";
-import { useNodesState } from "@xyflow/react";
 import EditableCell from "./EditableCell";
 
 const columnHelper = createColumnHelper();
 
 function Table({ nodesData, setNodes }) {
   const [data, setData] = useState(nodesData);
-  const [error, setError] = useState("");
   const columns = [
     columnHelper.accessor("id", {
       header: "ID",
@@ -25,59 +22,38 @@ function Table({ nodesData, setNodes }) {
           <EditableCell
             defaultValue={info.getValue()}
             validationRegex={/^-?\d+(\.\d+)?$/}
-            handleInputChange={(value) => handleInputChange(info, value)}
+            handleInputChange={(value) => {
+              const currentNode = info.row.original;
+              const updatedNode = {
+                ...currentNode,
+                position: { ...currentNode.position, x: value },
+              };
+              handleInputChange(updatedNode);
+            }}
             errorMessage={"Enter only numbers"}
+            type="text"
           />
-          // <div className=" relative">
-          //   <input
-          //     type="text"
-          //     className="[all:unset] p-1 text-center"
-          //     defaultValue={info.getValue()}
-          //     onChange={(e) => {
-          //       if (e.target.value.match(/^-?\d+(\.\d+)?$/)) {
-          //         handleInputChange(info, e.target.value);
-          //         setError("");
-          //       } else {
-          //         setError("Enter only numbers");
-          //       }
-          //     }}
-          //   />
-          //   <span className="absolute mt-5 -ml-45 text-xs text-red-500">
-          //     {error}
-          //   </span>
-          // </div>
         );
       },
     }),
     columnHelper.accessor("position.y", {
       header: "Position Y",
       cell: (info) => {
-        const rowIndex = info.row.index;
         return (
           <EditableCell
             defaultValue={info.getValue()}
             validationRegex={/^-?\d+(\.\d+)?$/}
-            handleInputChange={(value) => handleInputChange(info, value)}
+            handleInputChange={(value) => {
+              const currentNode = info.row.original;
+              const updatedNode = {
+                ...currentNode,
+                position: { ...currentNode.position, y: value },
+              };
+              handleInputChange(updatedNode);
+            }}
             errorMessage={"Enter only numbers"}
+            type="text"
           />
-          // <div className=" relative">
-          //   <input
-          //     type="text"
-          //     className="[all:unset] p-1 text-center "
-          //     defaultValue={info.getValue()}
-          //     onChange={(e) => {
-          //       if (e.target.value.match(/^-?\d+(\.\d+)?$/)) {
-          //         handleInputChange(info, e.target.value);
-          //         setError("");
-          //       } else {
-          //         setError("Enter only numbers");
-          //       }
-          //     }}
-          //   />
-          //   <span className="absolute mt-5 -ml-45 text-xs text-red-500">
-          //     {error}
-          //   </span>
-          // </div>
         );
       },
     }),
@@ -87,7 +63,25 @@ function Table({ nodesData, setNodes }) {
     }),
     columnHelper.accessor("deletable", {
       header: "Deletable",
-      cell: (info) => (info.getValue() ? "Yes" : "No"),
+      cell: (info) => {
+        return (
+          <EditableCell
+            checked={info.getValue()}
+            validationRegex={/^(true|false)$/}
+            handleInputChange={(value) => {
+              const currentNode = info.row.original;
+              const updatedNode = {
+                ...currentNode,
+                deletable: value,
+                error: "",
+              };
+              handleInputChange(updatedNode);
+            }}
+            errorMessage={"Its a Boolean"}
+            type="checkbox"
+          />
+        );
+      },
     }),
     columnHelper.accessor("selected", {
       header: "Selected",
@@ -107,16 +101,7 @@ function Table({ nodesData, setNodes }) {
     columns,
     getCoreRowModel: getCoreRowModel(),
   });
-  const handleInputChange = (info, value) => {
-    const fieldNameArray = info.column.id.split("_");
-    const currentNode = info.row.original;
-    const updatedNode = {
-      ...currentNode,
-      position: {
-        ...currentNode.position,
-        [fieldNameArray[fieldNameArray.length - 1]]: parseFloat(value),
-      },
-    };
+  const handleInputChange = (updatedNode) => {
     setNodes((prevNodes) =>
       prevNodes.map((node) => (node.id === updatedNode.id ? updatedNode : node))
     );
@@ -147,7 +132,7 @@ function Table({ nodesData, setNodes }) {
           {table.getRowModel().rows.map((row) => (
             <tr key={row.id} className="border-t">
               {row.getVisibleCells().map((cell) => (
-                <td key={cell.id} className="border p-2 text-center ">
+                <td key={cell.id} className="border p-2 text-center">
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </td>
               ))}

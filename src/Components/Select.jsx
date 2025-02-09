@@ -20,7 +20,7 @@ function Select({ label, options, onChange }) {
       <Button handleClick={handleToggle} label={label} />
 
       {isOpen && (
-        <div className="absolute mt-1 w-48 ml-2 rounded-md bg-gray-200">
+        <div className="absolute mt-1 w-48 ml-2 rounded-md bg-white">
           <div
             className="py-1"
             role="menu"
